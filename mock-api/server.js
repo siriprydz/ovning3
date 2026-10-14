@@ -15,10 +15,13 @@ try {
 // ---------------------------------------------------------------------------
 // Konfiguration
 // ---------------------------------------------------------------------------
-// Hemligheten läses ur miljön – med ett standardvärde så att det funkar utan .env /byrån
-const JWT_SECRET = process.env.JWT_SECRET || 'padel'
-const TOKEN_TTL = process.env.TOKEN_TTL || '30m'
-const PORT = Number(process.env.PORT || 4000)
+// Hemligheten måste komma från miljön. Ingen fallback: utan den startar inte servern.
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET måste anges i miljön eller i .env");
+}
+const TOKEN_TTL = process.env.TOKEN_TTL || "30m";
+const PORT = Number(process.env.PORT || 4000);
 
 // ---------------------------------------------------------------------------
 // Data. Lösenorden lagras som scrypt-hash (mock-api/hash-password.js gör en ny).
@@ -119,21 +122,22 @@ const requireLogin = (req, res, next) => {
   }
 }
 
-app.get('/api/user', requireLogin, (req, res) => res.json(publicMember(req.member)))
-
-// Bokningar för en medlem. memberNo i adressen gör att receptionen kan slå upp andra sen.
-app.get('/api/bookings', requireLogin, (req, res) => {
-  const memberNo = req.query.memberNo || req.member.memberNo
-  res.json(bookingsByMember[memberNo] || [])
+// Medlem hämtas bara ur den verifierade token, aldrig ur adressen (skydd mot IDOR).
+app.get('/api/user', requireLogin, (req, res) => {
+  res.json(publicMember(req.member))
 })
 
-app.get('/api/bookings/history', requireLogin, (req, res) => {
-  res.json(historyByMember[req.member.memberNo])
-})
+app.get("/api/bookings", requireLogin, (req, res) => {
+  res.json(bookingsByMember[req.member.memberNo] || []);
+});
 
-app.get('/api/messages', requireLogin, (req, res) => {
-  res.json(messagesByMember[req.member.memberNo] || [])
-})
+app.get("/api/bookings/history", requireLogin, (req, res) => {
+  res.json(historyByMember[req.member.memberNo]);
+});
+
+app.get("/api/messages", requireLogin, (req, res) => {
+  res.json(messagesByMember[req.member.memberNo] || []);
+});
 
 // Bokning: skapar ett bekräftelsemeddelande. Fälten lagras som TEXT och skickas som text –
 // frontenden renderar dem med interpolation, så en tagg i namnet blir tecken, inte kod.
