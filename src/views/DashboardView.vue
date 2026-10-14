@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>{{ greeting }}</h1>
-    <img src="../assets/hero.jpg" class="hero" alt="" loading="lazy">
+    <img src="../assets/hero.webp" class="hero" alt="" loading="lazy">
 
     <div class="grid">
       <div class="card">
