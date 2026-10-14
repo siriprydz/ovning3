@@ -123,6 +123,10 @@ const requireLogin = (req, res, next) => {
 }
 
 // Medlem hämtas bara ur den verifierade token, aldrig ur adressen (skydd mot IDOR).
+app.get('/api/user', requireLogin, (req, res) => {
+  res.json(publicMember(req.member))
+})
+
 app.get("/api/bookings", requireLogin, (req, res) => {
   res.json(bookingsByMember[req.member.memberNo] || []);
 });
