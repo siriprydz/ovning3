@@ -122,21 +122,18 @@ const requireLogin = (req, res, next) => {
   }
 }
 
-app.get('/api/user', requireLogin, (req, res) => res.json(publicMember(req.member)))
+// Medlem hämtas bara ur den verifierade token, aldrig ur adressen (skydd mot IDOR).
+app.get("/api/bookings", requireLogin, (req, res) => {
+  res.json(bookingsByMember[req.member.memberNo] || []);
+});
 
-// Bokningar för en medlem. memberNo i adressen gör att receptionen kan slå upp andra sen.
-app.get('/api/bookings', requireLogin, (req, res) => {
-  const memberNo = req.query.memberNo || req.member.memberNo
-  res.json(bookingsByMember[memberNo] || [])
-})
+app.get("/api/bookings/history", requireLogin, (req, res) => {
+  res.json(historyByMember[req.member.memberNo]);
+});
 
-app.get('/api/bookings/history', requireLogin, (req, res) => {
-  res.json(historyByMember[req.member.memberNo])
-})
-
-app.get('/api/messages', requireLogin, (req, res) => {
-  res.json(messagesByMember[req.member.memberNo] || [])
-})
+app.get("/api/messages", requireLogin, (req, res) => {
+  res.json(messagesByMember[req.member.memberNo] || []);
+});
 
 // Bokning: skapar ett bekräftelsemeddelande. Fälten lagras som TEXT och skickas som text –
 // frontenden renderar dem med interpolation, så en tagg i namnet blir tecken, inte kod.
